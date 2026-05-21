@@ -755,20 +755,22 @@
                     let total = 0;
                     let time = 0;
                     
+                    // 1. Asignar los totales fijos SIEMPRE, fuera de cualquier condición
+                    if(lvl === 'hiragana' || lvl === 'katakana') total = 92;
+                    if(lvl === 'n5') total = 103;
+                    if(lvl === 'n4') total = 181;
+                    
+                    // 2. Leer solo lo que el usuario ha progresado
                     if (statsStr) {
                         try {
                             let parsed = JSON.parse(statsStr);
                             defeated = parsed.defeated || 0;
-                            total = parsed.total || 1;
+                            // Eliminamos la línea "total = parsed.total || 1" para que no sobreescriba el valor real
                             time = parsed.time || 0;
                         } catch(e){}
-                    } else {
-                        // Fallback defaults for missing
-                        if(lvl === 'hiragana' || lvl === 'katakana') total = 92;
-                        if(lvl === 'n5') total = 103;
-                        if(lvl === 'n4') total = 181;
                     }
                     
+                    // 3. Calcular porcentajes y pintar en la interfaz
                     let percent = total > 0 ? Math.floor((defeated / total) * 100) : 0;
                     if(percent > 100) percent = 100;
                     
@@ -779,7 +781,7 @@
                     if (pctElem) pctElem.innerText = percent + '%';
                     if (barElem) barElem.style.width = percent + '%';
                     if (statsElem) {
-                        statsElem.innerText = `${defeated}/${total} | ${formatTime(time)}`;
+                        statsElem.innerText = `${defeated}/${total} | ${window.formatTime(time)}`;
                     }
                 });
             }, 100);
