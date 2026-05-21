@@ -1,10 +1,9 @@
 {
-  "projectId": "triple-rookery-307pf",
-  "appId": "1:763739329444:web:27c030cc1a6c982f3f2731",
-  "apiKey": "AIzaSyC2HMU2KDwf7M7B_kdVAljyZlSVBCjr19s",
-  "authDomain": "triple-rookery-307pf.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-3e809e79-98f2-40ce-903c-3e72ec9e3928",
-  "storageBucket": "triple-rookery-307pf.firebasestorage.app",
-  "messagingSenderId": "763739329444",
-  "measurementId": ""
+  "apiKey": "AIzaSyCTUr_Ik-4f_S4_EaQZitReYqjBnV2mVdc",
+  "authDomain": "kanjimon-ccd84.firebaseapp.com",
+  "projectId": "kanjimon-ccd84",
+  "storageBucket": "kanjimon-ccd84.firebasestorage.app",
+  "messagingSenderId": "273388554324",
+  "appId": "1:273388554324:web:93aee26265a9c50127c5c1",
+  "firestoreDatabaseId": "(default)"
 }
