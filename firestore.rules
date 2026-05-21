@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 3. Entity Validators
+    function isValidUserProgress(data) {
+      return data.keys().hasAll(['userId', 'username'])
+          && data.userId == request.auth.uid
+          && data.username is string && data.username.size() <= 100
+          && (('name' in data) ? (data.name is string && data.name.size() <= 100) : true)
+          && (('lastname' in data) ? (data.lastname is string && data.lastname.size() <= 100) : true)
+          && (('hiraganaDefeated' in data) ? (data.hiraganaDefeated is number) : true)
+          && (('hiraganaTime' in data) ? (data.hiraganaTime is number) : true)
+          && (('katakanaDefeated' in data) ? (data.katakanaDefeated is number) : true)
+          && (('katakanaTime' in data) ? (data.katakanaTime is number) : true)
+          && (('n5Defeated' in data) ? (data.n5Defeated is number) : true)
+          && (('n5Time' in data) ? (data.n5Time is number) : true)
+          && (('n4Defeated' in data) ? (data.n4Defeated is number) : true)
+          && (('n4Time' in data) ? (data.n4Time is number) : true);
+    }
+
+    match /user_progress/{userId} {
+      allow read: if isSignedIn(); // We want a global leaderboard, so all signed-in users can read progress.
+      
+      allow create: if isSignedIn() 
+                    && isValidId(userId) 
+                    && request.auth.uid == userId 
+                    && isValidUserProgress(incoming());
+
+      allow update: if isSignedIn() 
+                    && request.auth.uid == userId
+                    && isValidUserProgress(incoming())
+                    && incoming().userId == existing().userId;
+    }
+  }
+}

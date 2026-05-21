@@ -1,0 +1,30 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Stores user rankings and progress.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "lastname": { "type": "string" },
+        "username": { "type": "string" },
+        "hiraganaDefeated": { "type": "number" },
+        "hiraganaTime": { "type": "number" },
+        "katakanaDefeated": { "type": "number" },
+        "katakanaTime": { "type": "number" },
+        "n5Defeated": { "type": "number" },
+        "n5Time": { "type": "number" },
+        "n4Defeated": { "type": "number" },
+        "n4Time": { "type": "number" }
+      },
+      "required": ["userId", "username"]
+    }
+  },
+  "firestore": {
+    "user_progress/{userId}": {
+      "schema": { "$ref": "#/entities/UserProgress" },
+      "description": "Collection storing the player progress."
+    }
+  }
+}

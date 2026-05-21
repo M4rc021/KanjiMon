@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KataMon - Batalla</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #202020;
+            --screen-bg: #f8f8f8;
+            --hp-green: #48d048;
+            --hp-yellow: #f8d048;
+            --hp-red: #f84848;
+            --box-border: #686868;
+            --text-color: #303030;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', monospace;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        #game-console {
+            background-color: #d0d0d0;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2), 10px 10px 30px rgba(0,0,0,0.5);
+            width: 800px;
+            max-width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #screen {
+            border: 4px solid #404040;
+            border-radius: 5px;
+            height: 450px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #000;
+        }
+
+        #battle-scene {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .bg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.8s ease-in-out;
+            z-index: 1; background-size: cover; background-position: center;
+        }
+        .bg-layer.active { opacity: 1; }
+
+        .bg-1 { background-image: url('bg1.png'); image-rendering: pixelated; } 
+        .bg-2 { background-image: url('bg2.png'); image-rendering: pixelated; }
+        .bg-3 { background-image: url('bg3.png'); image-rendering: pixelated; }
+        .bg-4 { background-image: url('bg4.png'); image-rendering: pixelated; }
+
+        .station {
+            position: absolute; width: 250px; height: 160px; z-index: 5; 
+            transition: transform 0.3s ease;
+        }
+
+        #enemy-station { top: 40px; right: 30px; }
+        #player-station { bottom: 20px; left: 30px; }
+
+        .base {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
+            border-radius: 50%; border-width: 3px; border-style: solid;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1);
+            transition: background-color 0.8s ease, border-color 0.8s ease;
+        }
+
+        #battle-scene[data-terrain="0"] .base { background-color: #64b5f6; border-color: #1e88e5; }
+        #battle-scene[data-terrain="1"] .base { background-color: #a3a79d; border-color: #6a6e65; }
+        #battle-scene[data-terrain="2"] .base { background-color: #8a7b6a; border-color: #5a4b3a; }
+        #battle-scene[data-terrain="3"] .base { background-color: #6c9d4b; border-color: #3c6d1b; }
+
+        .sprite-container {
+            position: absolute; bottom: 25px; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #enemy-sprite {
+            width: 110px; height: 110px; background: white; border-radius: 50%;
+            border: 4px solid #303030; font-size: 70px; 
+            
+            display: flex;
+            justify-content: center; 
+            align-items: center;     
+            padding-bottom: 5px;     
+            
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: float 2s ease-in-out infinite; z-index: 5;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        #player-sprite {
+            width: 170px; height: 170px;
+            background-color: transparent;
+            background-image: url('player.png');
+            background-size: contain; background-repeat: no-repeat;
+            background-position: bottom center; filter: drop-shadow(0 8px 5px rgba(0,0,0,0.4)); z-index: 6;
+            image-rendering: pixelated;
+        }
+
+        #player-damage-circle {
+            position: absolute; width: 140px; height: 140px; background-color: rgba(248, 72, 72, 0.7);
+            border-radius: 50%; opacity: 0; pointer-events: none; z-index: 10;
+        }
+
+        .hp-box {
+            position: absolute; background: #ffffe8; border: 3px solid var(--box-border);
+            border-radius: 8px; padding: 10px; width: 270px; z-index: 10;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2); transition: width 0.3s ease;
+        }
+
+        #enemy-hp-box { top: 20px; left: 20px; border-bottom-right-radius: 20px; }
+        #player-hp-box { bottom: 20px; right: 20px; border-top-left-radius: 20px; }
+
+        .hp-box-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 8px; }
+        .level { font-size: 10px; }
+
+        .hp-bar-container {
+            background: #506858; border: 2px solid #303030; border-radius: 10px;
+            height: 12px; width: 100%; padding: 1px; display: flex; align-items: center;
+        }
+        .hp-text { font-size: 10px; color: #f8d048; margin-right: 5px; margin-left: 2px; }
+        .hp-bar-fill {
+            height: 100%; width: 100%; background-color: var(--hp-green);
+            border-radius: 5px; transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        .hp-numbers { text-align: right; font-size: 10px; margin-top: 5px; }
+
+        #bottom-ui {
+            height: 120px; background: #fff; border-top: 4px solid var(--box-border);
+            display: flex; position: relative; z-index: 20;
+        }
+
+        #dialog-box {
+            flex: 1; padding: 15px; font-size: 14px; line-height: 1.5;
+            border-right: 4px solid var(--box-border); cursor: pointer;
+        }
+
+        #action-menu {
+            width: 450px; display: grid; grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr; background: #f0f0f0;
+        }
+
+        .attack-btn {
+            background: transparent; border: 2px solid transparent; font-size: 12px;
+            cursor: pointer; outline: none; text-align: left; padding-left: 15px; transition: background 0.1s;
+        }
+        .attack-btn:hover:not(:disabled) { background: rgba(0,0,0,0.05); border: 2px dashed #888; }
+        .attack-btn:disabled { color: #aaa; cursor: not-allowed; }
+        .attack-btn::before { content: '▶'; color: transparent; margin-right: 8px; }
+        .attack-btn:hover:not(:disabled)::before { color: #303030; }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; color: white; text-align: center;
+        }
+
+        #overlay h1 { font-size: 30px; margin-bottom: 20px; color: #f8d048; text-shadow: 2px 2px #54a0ff; padding: 0 10px;}
+        #overlay p { font-size: 12px; line-height: 1.8; margin-bottom: 30px; max-width: 80%; }
+        
+        .start-btn {
+            background: #54a0ff; border: 4px solid #0984e3; color: #fff;
+            padding: 15px 20px; font-size: 16px; cursor: pointer; border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .start-btn:hover { background: #74b9ff; }
+        
+        .secondary-btn {
+            background: transparent; border: 2px solid #fff; color: #fff;
+            padding: 10px 15px; font-size: 12px; cursor: pointer; border-radius: 5px;
+            margin-top: 10px;
+        }
+        .secondary-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .hidden { display: none !important; }
+
+        .save-exit-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #f84848;
+            color: white;
+            border: 2px solid #303030;
+            padding: 8px 12px;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 50;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+        .save-exit-btn:hover {
+            background-color: #d82020;
+            transform: translateY(-2px); box-shadow: 2px 4px 0px rgba(0,0,0,0.5);
+        }
+        .save-exit-btn:active {
+            transform: translateY(0); box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes damageBlink { 0%, 40%, 80%, 100% { opacity: 1; filter: brightness(1); } 20%, 60% { opacity: 0; filter: brightness(0) drop-shadow(0 0 20px red); background: red; } }
+        @keyframes tacklePlayer { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(30px, -30px); } }
+        @keyframes tackleEnemy { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-30px, 30px); } }
+        @keyframes capture { 0% { transform: scale(1) translateY(0); opacity: 1; } 100% { transform: scale(0.1) translateY(100px); opacity: 0; } }
+        @keyframes circleBlink { 0%, 50%, 100% { opacity: 0; transform: scale(0.8); } 25%, 75% { opacity: 1; transform: scale(1.1); } }
+    
+        @media (max-width: 768px) {
+            body { align-items: flex-start; } 
+            #game-console { padding: 0; border-radius: 0; width: 100vw; height: 100dvh; border: none; }
+            #screen { height: 100%; border-radius: 0; border: none; }
+            #bottom-ui { flex-direction: column; height: auto; flex-shrink: 0; }
+            #dialog-box { border-right: none; border-bottom: 2px solid var(--box-border); min-height: 70px; font-size: 11px; padding: 12px; }
+            #action-menu { width: 100%; height: 130px; }
+            .attack-btn { font-size: 10px; padding-left: 5px; } 
+            .attack-btn::before { display: none; } 
+            .hp-box { width: 160px; padding: 6px; }
+            .hp-box-header { font-size: 9px; }
+            .level, .hp-text, .hp-numbers { font-size: 8px; }
+            #enemy-hp-box { top: 10px; left: 10px; border-bottom-right-radius: 10px; }
+            #player-hp-box { bottom: 10px; right: 10px; border-top-left-radius: 10px;}
+            .station { transform: scale(0.60); }
+            #enemy-station { top: 30px; right: -40px; transform-origin: right top; }
+            #player-station { bottom: 10px; left: -40px; transform-origin: left bottom; }
+            #overlay h1 { font-size: 22px; }
+            #overlay p { font-size: 11px; }
+            .save-exit-btn { top: 5px; right: 5px; font-size: 8px; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-console">
+        <div id="screen">
+            
+            <button id="save-exit-btn" class="save-exit-btn hidden">Guardar y Salir</button>
+
+            <div id="overlay">
+                <h1>KATAMON</h1>
+                <p>Estudiante, ¡es hora de dominar el Katakana!<br><br>Supera la Fase de Identificación y la Fase de Vocabulario para convertirte en un maestro.</p>
+                <button class="start-btn" id="start-game-btn">EMPEZAR EXAMEN</button>
+                <button class="secondary-btn hidden" id="reset-save-btn">Borrar Partida Guardada</button>
+                <br>
+                <button class="secondary-btn" onclick="window.location.href='index.html'" style="border-color: #888;">Volver al Menú</button>
+            </div>
+
+            <div id="battle-scene" data-terrain="0">
+                <div class="bg-layer bg-1 active"></div>
+                <div class="bg-layer bg-2"></div>
+                <div class="bg-layer bg-3"></div>
+                <div class="bg-layer bg-4"></div>
+
+                <div id="enemy-station" class="station">
+                    <div id="enemy-base" class="base"></div>
+                    <div class="sprite-container">
+                        <div id="enemy-sprite">ア</div>
+                    </div>
+                </div>
+                
+                <div id="enemy-hp-box" class="hp-box">
+                    <div class="hp-box-header">
+                        <span id="enemy-name">Katakana Salvaje</span>
+                        <span class="level">Lv <span id="enemy-lvl">1</span></span>
+                    </div>
+                    <div class="hp-bar-container">
+                        <span class="hp-text">HP</span>
+                        <div id="enemy-hp-fill" class="hp-bar-fill"></div>
+                    </div>
+                </div>
+
+                <div id="player-station" class="station">
+                    <div id="player-base" class="base"></div>
+                    <div class="sprite-container">
+                        <div id="player-sprite"></div>
+                        <div id="player-damage-circle"></div>
+                    </div>
+                </div>
+                
+                <div id="player-hp-box" class="hp-box">
+                    <div class="hp-box-header">
+                        <span>Estudiante</span>
+                        <span class="level">Lv Kana</span>
+                    </div>
+                    <div class="hp-bar-container">
+                        <span class="hp-text">HP</span>
+                        <div id="player-hp-fill" class="hp-bar-fill"></div>
+                    </div>
+                    <div class="hp-numbers"><span id="player-hp-text">20</span>/20</div>
+                </div>
+            </div>
+
+            <div id="bottom-ui">
+                <div id="dialog-box">¡Un salvaje ア ha aparecido!</div>
+                <div id="action-menu">
+                    <button class="attack-btn" id="btn-0"></button>
+                    <button class="attack-btn" id="btn-1"></button>
+                    <button class="attack-btn" id="btn-2"></button>
+                    <button class="attack-btn" id="btn-3"></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const katakanaDB = [
+            { kana: "ア", romaji: "a", word: "_イス", translation: "アイス (Helado)" },
+            { kana: "イ", romaji: "i", word: "ト_レ", translation: "トイレ (Baño)" },
+            { kana: "ウ", romaji: "u", word: "マ_ス", translation: "マウス (Ratón)" },
+            { kana: "エ", romaji: "e", word: "_レベーター", translation: "エレベーター (Ascensor)" },
+            { kana: "オ", romaji: "o", word: "タ_ル", translation: "タオル (Toalla)" },
+            { kana: "カ", romaji: "ka", word: "_メラ", translation: "カメラ (Cámara)" },
+            { kana: "キ", romaji: "ki", word: "ケ_ー", translation: "ケーキ (Pastel)" },
+            { kana: "ク", romaji: "ku", word: "クラ_", translation: "クラス (Clase)" },
+            { kana: "ケ", romaji: "ke", word: "バス_ット", translation: "バスケット (Canasta)" },
+            { kana: "コ", romaji: "ko", word: "_ーヒー", translation: "コーヒー (Café)" },
+            { kana: "サ", romaji: "sa", word: "_ラダ", translation: "サラダ (Ensalada)" },
+            { kana: "シ", romaji: "shi", word: "タク_ー", translation: "タクシー (Taxi)" },
+            { kana: "ス", romaji: "su", word: "テニ_", translation: "テニス (Tenis)" },
+            { kana: "セ", romaji: "se", word: "_ーター", translation: "セーター (Suéter)" },
+            { kana: "ソ", romaji: "so", word: "_ース", translation: "ソース (Salsa)" },
+            { kana: "タ", romaji: "ta", word: "ネク_イ", translation: "ネクタイ (Corbata)" },
+            { kana: "チ", romaji: "chi", word: "_ーズ", translation: "チーズ (Queso)" },
+            { kana: "ツ", romaji: "tsu", word: "シャ_", translation: "シャツ (Camisa)" },
+            { kana: "テ", romaji: "te", word: "_レビ", translation: "テレビ (Televisión)" },
+            { kana: "ト", romaji: "to", word: "_マト", translation: "トマト (Tomate)" },
+            { kana: "ナ", romaji: "na", word: "バ_ナ", translation: "バナナ (Plátano)" },
+            { kana: "ニ", romaji: "ni", word: "ス_ーカー", translation: "スニーカー (Zapatillas)" },
+            { kana: "ヌ", romaji: "nu", word: "カ_ー", translation: "カヌー (Canoa)" },
+            { kana: "ネ", romaji: "ne", word: "イ_ターネット", translation: "インターネット (Internet)" },
+            { kana: "ノ", romaji: "no", word: "_ート", translation: "ノート (Cuaderno)" },
+            { kana: "ハ", romaji: "ha", word: "_ム", translation: "ハム (Jamón)" },
+            { kana: "ヒ", romaji: "hi", word: "_ーター", translation: "ヒーター (Calentador)" },
+            { kana: "フ", romaji: "fu", word: "ナイ_", translation: "ナイフ (Cuchillo)" },
+            { kana: "ヘ", romaji: "he", word: "_リコプター", translation: "ヘリコプター (Helicóptero)" },
+            { kana: "ホ", romaji: "ho", word: "_テル", translation: "ホテル (Hotel)" },
+            { kana: "マ", romaji: "ma", word: "ス_ホ", translation: "スマホ (Smartphone)" },
+            { kana: "ミ", romaji: "mi", word: "_ルク", translation: "ミルク (Leche)" },
+            { kana: "ム", romaji: "mu", word: "ガ_テープ", translation: "ガムテープ (Cinta)" },
+            { kana: "メ", romaji: "me", word: "カ_ラ", translation: "カメラ (Cámara)" }, 
+            { kana: "モ", romaji: "mo", word: "_ニター", translation: "モニター (Monitor)" },
+            { kana: "ヤ", romaji: "ya", word: "タ_ヤ", translation: "タイヤ (Llanta)" },
+            { kana: "ユ", romaji: "yu", word: "ニ_ース", translation: "ニュース (Noticias)" },
+            { kana: "ヨ", romaji: "yo", word: "マ_ネーズ", translation: "マヨネーズ (Mayonesa)" },
+            { kana: "ラ", romaji: "ra", word: "カ_オ", translation: "ラジオ (Radio)" },
+            { kana: "リ", romaji: "ri", word: "アメ_カ", translation: "アメリカ (Norteamérica)" },
+            { kana: "ル", romaji: "ru", word: "プ_ー", translation: "プール (Piscina)" },
+            { kana: "レ", romaji: "re", word: "トイ_", translation: "トイレ (Baño)" },
+            { kana: "ロ", romaji: "ro", word: "メ_ン", translation: "メロン (Melón)" },
+            { kana: "ワ", romaji: "wa", word: "シャ_ー", translation: "シャワー (Ducha)" },
+            { kana: "ヲ", romaji: "wo", word: "ヲ", translation: "ヲタ (Otaku)" },
+            { kana: "ン", romaji: "n", word: "パ_コン", translation: "パソコン (PC)" }
+        ];
+
+        const allRomaji = katakanaDB.map(h => h.romaji);
+        
+        function formatWordOption(data) {
+            const meaning = data.translation.substring(data.translation.indexOf(' ')); 
+            return data.word + meaning;
+        }
+
+        let studentMaxHP = 20; 
+        let studentHP = studentMaxHP;
+        let gameQueue = []; 
+        let currentIndex = 0;
+        let activeEncounter = null;
+        let isTyping = false;
+        let isProcessingTurn = false;
+
+        let timeSpentSeconds = 0;
+        let lastTimeCheck = Date.now();
+        let isPlaying = false;
+        
+        setInterval(() => {
+            if (isPlaying) {
+                let now = Date.now();
+                timeSpentSeconds += Math.floor((now - lastTimeCheck) / 1000);
+                lastTimeCheck = now;
+                
+                let existingStats = localStorage.getItem('stats_katakana');
+                let bestDefeated = 0;
+                let bestTime = 0;
+                
+                if (existingStats) {
+                    try { 
+                        let p = JSON.parse(existingStats);
+                        bestDefeated = p.defeated || 0; 
+                        bestTime = p.time || 0;
+                    } catch(e){}
+                }
+                
+                if (currentIndex >= bestDefeated) {
+                    localStorage.setItem('stats_katakana', JSON.stringify({
+                        defeated: currentIndex,
+                        total: gameQueue.length || 92,
+                        time: timeSpentSeconds
+                    }));
+                }
+            }
+        }, 1000);
+
+        const overlay = document.getElementById('overlay');
+        const startBtn = document.getElementById('start-game-btn');
+        const resetSaveBtn = document.getElementById('reset-save-btn');
+        const saveExitBtn = document.getElementById('save-exit-btn');
+        const dialogBox = document.getElementById('dialog-box');
+        const buttons = [
+            document.getElementById('btn-0'),
+            document.getElementById('btn-1'),
+            document.getElementById('btn-2'),
+            document.getElementById('btn-3')
+        ];
+        
+        const enemySprite = document.getElementById('enemy-sprite');
+        const enemyHPFill = document.getElementById('enemy-hp-fill');
+        const enemyName = document.getElementById('enemy-name');
+        const enemyLvl = document.getElementById('enemy-lvl');
+
+        const playerSprite = document.getElementById('player-sprite');
+        const playerHPFill = document.getElementById('player-hp-fill');
+        const playerHPText = document.getElementById('player-hp-text');
+
+        let currentBgIndex = 0;
+        const bgLayers = document.querySelectorAll('.bg-layer');
+
+        const savedProgress = localStorage.getItem('katamon_save');
+        if(savedProgress) {
+            startBtn.innerText = "CONTINUAR PARTIDA";
+            resetSaveBtn.classList.remove('hidden');
+        }
+
+        resetSaveBtn.addEventListener('click', () => {
+            if(confirm("¿Estás seguro de que deseas borrar tu progreso?")) {
+                localStorage.removeItem('katamon_save');
+                startBtn.innerText = "EMPEZAR EXAMEN";
+                resetSaveBtn.classList.add('hidden');
+            }
+        });
+
+        saveExitBtn.addEventListener('click', () => {
+            if(isProcessingTurn) return;
+            isPlaying = false;
+            
+            const saveData = {
+                hp: studentHP,
+                currentIndex: currentIndex,
+                queue: gameQueue,
+                timeSpent: timeSpentSeconds
+            };
+            
+            localStorage.setItem('katamon_save', JSON.stringify(saveData));
+            
+            saveExitBtn.classList.add('hidden');
+            overlay.classList.remove('hidden');
+            overlay.innerHTML = `
+                <h1>PROGRESO GUARDADO</h1>
+                <p>Tus datos han sido guardados exitosamente.</p>
+                <button class="start-btn" onclick="window.location.href='index.html'">Volver al Menú</button>
+            `;
+        });
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function typeWriter(text, callback) {
+            isTyping = true;
+            dialogBox.innerHTML = '';
+            setButtonsState(false);
+            
+            let i = 0;
+            const speed = 20;
+            
+            function type() {
+                if (i < text.length) {
+                    dialogBox.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    isTyping = false;
+                    if(callback) callback();
+                }
+            }
+            type();
+        }
+
+        function setButtonsState(enabled) {
+            buttons.forEach(btn => {
+                btn.disabled = !enabled;
+                if(!enabled && !isProcessingTurn) btn.innerText = '';
+            });
+        }
+
+        function updatePlayerHP() {
+            playerHPText.innerText = studentHP;
+            const percentage = (studentHP / studentMaxHP) * 100;
+            playerHPFill.style.width = percentage + '%';
+            
+            if(percentage > 50) playerHPFill.style.backgroundColor = 'var(--hp-green)';
+            else if(percentage > 20) playerHPFill.style.backgroundColor = 'var(--hp-yellow)';
+            else playerHPFill.style.backgroundColor = 'var(--hp-red)';
+        }
+
+        function loadNextEncounter() {
+            if(currentIndex >= gameQueue.length) {
+                isPlaying = false;
+                saveExitBtn.classList.add('hidden');
+                localStorage.removeItem('katamon_save'); 
+                overlay.classList.remove('hidden');
+                overlay.innerHTML = `
+                    <h1>¡APROBADO!</h1>
+                    <p>¡Felicidades! Has superado las rondas de Katakana.</p>
+                    <button class="start-btn" onclick="window.location.href='index.html'">Volver al Menú</button>
+                `;
+                return;
+            }
+
+            activeEncounter = gameQueue[currentIndex];
+            
+            enemySprite.innerText = activeEncounter.data.kana;
+            enemySprite.style.fontSize = "70px"; 
+
+            if (activeEncounter.mode === 1) {
+                enemySprite.style.background = "white";
+                enemySprite.style.color = "#303030";
+                enemyName.innerText = "Katakana " + activeEncounter.data.kana;
+                enemyLvl.innerText = "1";
+            } else {
+                enemySprite.style.background = "linear-gradient(135deg, #74b9ff, #0984e3)";
+                enemySprite.style.color = "white";
+                enemyName.innerText = "Kana Enojado";
+                enemyLvl.innerText = "2";
+            }
+
+            enemySprite.style.animation = 'float 2s ease-in-out infinite';
+            enemySprite.style.opacity = '1';
+            enemySprite.style.transform = 'scale(1) translateY(0)';
+            
+            enemyHPFill.style.width = '100%';
+            enemyHPFill.style.backgroundColor = 'var(--hp-green)';
+
+            let introText = activeEncounter.mode === 1 
+                ? `¡Un salvaje ${activeEncounter.data.kana} ha aparecido!`
+                : `¡El ${activeEncounter.data.kana} está furioso! ¡Completa su palabra!`;
+
+            typeWriter(introText, generateTurnOptions);
+        }
+
+        function generateTurnOptions() {
+            setButtonsState(false);
+
+            let correctOption;
+            let wrongPool;
+
+            if (activeEncounter.mode === 1) {
+                correctOption = activeEncounter.data.romaji;
+                wrongPool = allRomaji.filter(r => r !== correctOption);
+            } else {
+                correctOption = formatWordOption(activeEncounter.data);
+                wrongPool = katakanaDB
+                    .filter(h => h.kana !== activeEncounter.data.kana)
+                    .map(h => formatWordOption(h));
+            }
+            
+            let options = [correctOption];
+            shuffle(wrongPool);
+            
+            options.push(wrongPool[0], wrongPool[1], wrongPool[2]);
+            shuffle(options);
+
+            buttons.forEach((btn, index) => {
+                btn.innerText = options[index];
+                btn.onclick = () => handleAttack(options[index], correctOption);
+            });
+
+            setButtonsState(true);
+            
+            let questionText = activeEncounter.mode === 1 
+                ? `¿Cuál es el romaji correcto?`
+                : `¿En qué palabra encaja este kana?`;
+            
+            dialogBox.innerHTML = questionText;
+        }
+
+        function handleAttack(selectedOption, correctOption) {
+            if(isProcessingTurn) return;
+            isProcessingTurn = true;
+            setButtonsState(false);
+
+            if(selectedOption === correctOption) {
+                typeWriter(`Estudiante usó "${selectedOption}"...`, () => {
+                    playerSprite.style.animation = 'tacklePlayer 0.5s';
+                    
+                    setTimeout(() => {
+                        playerSprite.style.animation = '';
+                        enemySprite.style.animation = 'damageBlink 0.5s';
+                        
+                        setTimeout(() => {
+                            enemySprite.style.animation = 'float 2s ease-in-out infinite';
+                            enemyHPFill.style.width = '0%';
+                            
+                            typeWriter(`¡Es súper efectivo!`, () => {
+                                setTimeout(() => defeatEncounter(), 1000);
+                            });
+                        }, 500);
+                    }, 250);
+                });
+            } else {
+                typeWriter(`Estudiante intentó "${selectedOption}"... ¡Pero falló!`, () => {
+                    setTimeout(() => enemyAttack(), 1000);
+                });
+            }
+        }
+
+        function enemyAttack() {
+            let attackMsg = activeEncounter.mode === 1 
+                ? `¡El enemigo está confundido y ataca!` 
+                : `¡El ${activeEncounter.data.kana} Enojado te ataca con furia!`;
+
+            typeWriter(attackMsg, () => {
+                enemySprite.style.animation = 'tackleEnemy 0.5s';
+                
+                setTimeout(() => {
+                    enemySprite.style.animation = 'float 2s ease-in-out infinite';
+                    const dmgCircle = document.getElementById('player-damage-circle');
+                    dmgCircle.style.animation = 'circleBlink 0.5s';
+                    
+                    setTimeout(() => {
+                        dmgCircle.style.animation = '';
+                        studentHP -= 3;
+                        if(studentHP < 0) studentHP = 0;
+                        updatePlayerHP();
+                        
+                        if(studentHP === 0) {
+                            gameOver();
+                        } else {
+                            setTimeout(() => {
+                                isProcessingTurn = false;
+                                generateTurnOptions();
+                            }, 1000);
+                        }
+                    }, 500);
+                }, 250);
+            });
+        }
+
+        function defeatEncounter() {
+            enemySprite.style.animation = 'capture 1s forwards';
+            
+            studentHP = Math.min(studentMaxHP, studentHP + 2);
+            updatePlayerHP();
+            
+            setTimeout(() => {
+                let endMessage = activeEncounter.mode === 1 
+                    ? `¡Katakana ${activeEncounter.data.kana} registrado!`
+                    : `¡Has calmado al ${activeEncounter.data.kana}! Su palabra era: ${activeEncounter.data.translation}`;
+
+                typeWriter(endMessage, () => {
+                    setTimeout(() => {
+                        currentIndex++;
+                        
+                        if (currentIndex > 0 && currentIndex % 10 === 0) {
+                            bgLayers.forEach(layer => layer.classList.remove('active'));
+                            currentBgIndex = (currentBgIndex + 1) % bgLayers.length;
+                            bgLayers[currentBgIndex].classList.add('active');
+                            document.getElementById('battle-scene').setAttribute('data-terrain', currentBgIndex);
+                        }
+
+                        if (currentIndex === katakanaDB.length) {
+                            showModeTransition();
+                        } else {
+                            isProcessingTurn = false;
+                            loadNextEncounter();
+                        }
+                    }, 2000);
+                });
+            }, 1000);
+        }
+
+        function showModeTransition() {
+            isPlaying = false;
+            saveExitBtn.classList.add('hidden');
+            overlay.classList.remove('hidden');
+            overlay.innerHTML = `
+                <h1>¡FASE 1 COMPLETADA!</h1>
+                <p>¡Excelente! Has dominado el reconocimiento.<br><br>Prepárate para la <strong>Fase Final (Vocabulario)</strong>.<br>Ahora el Katakana estará enojado. ¡Selecciona la palabra a la que pertenece para calmarlo!</p>
+                <button class="start-btn" onclick="resumeGame()">Iniciar Fase 2</button>
+            `;
+        }
+
+        function resumeGame() {
+            overlay.classList.add('hidden');
+            saveExitBtn.classList.remove('hidden');
+            isProcessingTurn = false;
+            isPlaying = true;
+            lastTimeCheck = Date.now();
+            loadNextEncounter();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            typeWriter(`¡Estudiante se ha quedado sin energía!`, () => {
+                setTimeout(() => {
+                    saveExitBtn.classList.add('hidden');
+                    localStorage.removeItem('katamon_save');
+                    overlay.classList.remove('hidden');
+                    overlay.innerHTML = `
+                        <h1>SUSPENSO...</h1>
+                        <p>No te rindas, el japonés requiere constancia.</p>
+                        <p style="color: #f8d048; font-size: 18px; margin-bottom: 20px;">
+                            Llegaste a la ronda <strong>${currentIndex + 1}</strong> de ${katakanaDB.length * 2}.
+                        </p>
+                        <button class="start-btn" onclick="window.location.href='index.html'">Volver al Menú</button>
+                    `;
+                }, 1500);
+            });
+        }
+
+        startBtn.addEventListener('click', () => {
+            overlay.classList.add('hidden');
+            saveExitBtn.classList.remove('hidden');
+            
+            const savedData = localStorage.getItem('katamon_save');
+            
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                studentHP = parsed.hp;
+                currentIndex = parsed.currentIndex;
+                gameQueue = parsed.queue;
+                timeSpentSeconds = parsed.timeSpent || 0;
+            } else {
+                studentHP = studentMaxHP;
+                currentIndex = 0;
+                timeSpentSeconds = 0;
+                gameQueue = [];
+                
+                let mode1 = shuffle([...katakanaDB]);
+                mode1.forEach(data => gameQueue.push({ mode: 1, data: data }));
+
+                let mode2 = shuffle([...katakanaDB]);
+                mode2.forEach(data => gameQueue.push({ mode: 2, data: data }));
+            }
+            
+            isPlaying = true;
+            lastTimeCheck = Date.now();
+            updatePlayerHP();
+            isProcessingTurn = false;
+            
+            bgLayers.forEach(layer => layer.classList.remove('active'));
+            currentBgIndex = Math.floor(currentIndex / 10) % bgLayers.length;
+            bgLayers[currentBgIndex].classList.add('active');
+            document.getElementById('battle-scene').setAttribute('data-terrain', currentBgIndex);
+
+            loadNextEncounter();
+        });
+
+    </script>
+</body>
+</html>
