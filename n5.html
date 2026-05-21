@@ -195,6 +195,7 @@
 
         .hidden { display: none !important; }
 
+        /* Nuevos estilos para los botones del HUD y control de volumen */
         .hud-btn {
             position: absolute;
             top: 15px;
@@ -267,7 +268,6 @@
             .hud-btn { top: 5px; right: 5px; font-size: 8px; padding: 6px 10px; }
             #volume-control { top: 38px; right: 5px; padding: 4px; }
             #volume-slider { width: 60px; }
-            #pause-overlay h1 { font-size: 24px; }
         }
     </style>
 </head>
@@ -277,15 +277,16 @@
         <div id="screen">
             
             <button id="pause-btn" class="hud-btn hidden">Pausa</button>
+
             <div id="volume-control" class="hidden">
-                <span style="font-size: 12px; margin-right: 5px;">🔊</span>
+                <span style="font-size: 10px; margin-right: 5px;">🔊</span>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
             </div>
 
             <div id="pause-overlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;">
                 <h1 style="font-size: 30px; margin-bottom: 30px; color: #f8d048; text-shadow: 2px 2px #d85020;">PAUSA</h1>
                 <button id="resume-btn" class="start-btn">Reanudar</button>
-                <button id="save-exit-btn" class="secondary-btn" style="background-color: #f84848; border-color: #303030; margin-top: 20px;">Guardar y Salir</button>
+                <button id="save-exit-btn" class="secondary-btn" style="background-color: #f84848; border-color: #303030;">Guardar y Salir</button>
             </div>
 
             <div id="overlay">
@@ -549,7 +550,7 @@
         const playerHPFill = document.getElementById('player-hp-fill');
         const playerHPText = document.getElementById('player-hp-text');
 
-        // Nuevas variables DOM para pausa y volumen
+        // Nuevos elementos del DOM
         const pauseBtn = document.getElementById('pause-btn');
         const resumeBtn = document.getElementById('resume-btn');
         const pauseOverlay = document.getElementById('pause-overlay');
@@ -557,27 +558,6 @@
         const volumeSlider = document.getElementById('volume-slider');
         const saveExitBtn = document.getElementById('save-exit-btn');
         const musica = document.getElementById('musica-batalla');
-
-        // Lógica de volumen
-        volumeSlider.addEventListener('input', (e) => {
-            musica.volume = e.target.value;
-        });
-
-        // Lógica de pausa
-        pauseBtn.addEventListener('click', () => {
-            if(isProcessingTurn) return;
-            isPlaying = false;
-            musica.pause();
-            pauseOverlay.classList.remove('hidden');
-        });
-
-        // Lógica para reanudar
-        resumeBtn.addEventListener('click', () => {
-            pauseOverlay.classList.add('hidden');
-            musica.play();
-            lastTimeCheck = Date.now();
-            isPlaying = true;
-        });
 
         // Restore Progress logic
         const savedProgress = localStorage.getItem('kanjimon_n5_save');
@@ -594,7 +574,28 @@
             }
         });
 
-        // Guardar y Salir
+        // Evento de control de volumen
+        volumeSlider.addEventListener('input', (e) => {
+            musica.volume = e.target.value;
+        });
+
+        // Botón de Pausa principal
+        pauseBtn.addEventListener('click', () => {
+            if(isProcessingTurn) return;
+            isPlaying = false;
+            musica.pause();
+            pauseOverlay.classList.remove('hidden');
+        });
+
+        // Botón de Reanudar
+        resumeBtn.addEventListener('click', () => {
+            pauseOverlay.classList.add('hidden');
+            musica.play();
+            lastTimeCheck = Date.now();
+            isPlaying = true;
+        });
+
+        // Guardar y Salir (desde el menú de pausa)
         saveExitBtn.addEventListener('click', () => {
             isPlaying = false;
             musica.pause();
@@ -684,6 +685,7 @@
                 
                 pauseBtn.classList.add('hidden');
                 volumeControl.classList.add('hidden');
+                
                 localStorage.removeItem('kanjimon_n5_save');
                 overlay.classList.remove('hidden');
                 overlay.innerHTML = `
@@ -903,7 +905,7 @@
             
             isPlaying = true;
 
-            musica.volume = volumeSlider.value; 
+            musica.volume = volumeSlider.value; // Inicializa con el valor del slider (0.5 por defecto)
             musica.play();
 
             lastTimeCheck = Date.now();
