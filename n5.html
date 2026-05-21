@@ -195,11 +195,9 @@
 
         .hidden { display: none !important; }
 
-        /* Nuevos estilos para los botones del HUD y control de volumen */
+        /* Estilos para el HUD superior (Pausa y Volumen) */
         .hud-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
             background-color: #f8d048;
             color: #303030;
             border: 2px solid #303030;
@@ -219,22 +217,28 @@
             transform: translateY(0); box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
         }
 
-        #volume-control {
+        #pause-btn { top: 15px; right: 15px; }
+        #volume-toggle-btn { top: 55px; right: 15px; font-size: 14px; padding: 4px 8px; }
+
+        #volume-dropdown {
             position: absolute;
-            top: 55px;
+            top: 95px;
             right: 15px;
             background: rgba(240, 240, 240, 0.9);
             border: 2px solid #303030;
             border-radius: 5px;
-            padding: 5px 10px;
+            padding: 10px 5px;
             z-index: 50;
-            display: flex;
-            align-items: center;
             box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
         }
 
         #volume-slider {
-            width: 80px;
+            -webkit-appearance: slider-vertical; /* Renderizado vertical para Chrome/Safari */
+            appearance: slider-vertical;         /* Renderizado vertical estándar */
+            width: 20px;
+            height: 80px;
             cursor: pointer;
         }
 
@@ -265,9 +269,12 @@
             #player-station { bottom: 10px; left: -40px; transform-origin: left bottom; }
             #overlay h1 { font-size: 22px; }
             #overlay p { font-size: 11px; }
-            .hud-btn { top: 5px; right: 5px; font-size: 8px; padding: 6px 10px; }
-            #volume-control { top: 38px; right: 5px; padding: 4px; }
-            #volume-slider { width: 60px; }
+
+            .hud-btn { font-size: 8px; padding: 6px 10px; }
+            #pause-btn { top: 5px; right: 5px; }
+            #volume-toggle-btn { top: 35px; right: 5px; font-size: 12px; padding: 4px 6px; }
+            #volume-dropdown { top: 70px; right: 5px; padding: 5px; }
+            #volume-slider { height: 60px; }
         }
     </style>
 </head>
@@ -278,9 +285,9 @@
             
             <button id="pause-btn" class="hud-btn hidden">Pausa</button>
 
-            <div id="volume-control" class="hidden">
-                <span style="font-size: 10px; margin-right: 5px;">🔊</span>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+            <button id="volume-toggle-btn" class="hud-btn hidden">🔊</button>
+            <div id="volume-dropdown" class="hidden">
+                <input type="range" id="volume-slider" orient="vertical" min="0" max="1" step="0.01" value="0.5">
             </div>
 
             <div id="pause-overlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;">
@@ -550,13 +557,14 @@
         const playerHPFill = document.getElementById('player-hp-fill');
         const playerHPText = document.getElementById('player-hp-text');
 
-        // Nuevos elementos del DOM
+        // Referencias a los nuevos elementos del DOM
         const pauseBtn = document.getElementById('pause-btn');
         const resumeBtn = document.getElementById('resume-btn');
         const pauseOverlay = document.getElementById('pause-overlay');
-        const volumeControl = document.getElementById('volume-control');
-        const volumeSlider = document.getElementById('volume-slider');
         const saveExitBtn = document.getElementById('save-exit-btn');
+        const volumeToggleBtn = document.getElementById('volume-toggle-btn');
+        const volumeDropdown = document.getElementById('volume-dropdown');
+        const volumeSlider = document.getElementById('volume-slider');
         const musica = document.getElementById('musica-batalla');
 
         // Restore Progress logic
@@ -574,17 +582,22 @@
             }
         });
 
-        // Evento de control de volumen
+        // Eventos del Volumen Desplegable
+        volumeToggleBtn.addEventListener('click', () => {
+            volumeDropdown.classList.toggle('hidden');
+        });
+
         volumeSlider.addEventListener('input', (e) => {
             musica.volume = e.target.value;
         });
 
-        // Botón de Pausa principal
+        // Botón de Pausa
         pauseBtn.addEventListener('click', () => {
             if(isProcessingTurn) return;
             isPlaying = false;
             musica.pause();
             pauseOverlay.classList.remove('hidden');
+            volumeDropdown.classList.add('hidden'); // Ocultar el slider si estaba abierto
         });
 
         // Botón de Reanudar
@@ -613,7 +626,8 @@
             
             pauseOverlay.classList.add('hidden');
             pauseBtn.classList.add('hidden');
-            volumeControl.classList.add('hidden');
+            volumeToggleBtn.classList.add('hidden');
+            volumeDropdown.classList.add('hidden');
             
             overlay.classList.remove('hidden');
             overlay.innerHTML = `
@@ -684,7 +698,8 @@
                 musica.pause();
                 
                 pauseBtn.classList.add('hidden');
-                volumeControl.classList.add('hidden');
+                volumeToggleBtn.classList.add('hidden');
+                volumeDropdown.classList.add('hidden');
                 
                 localStorage.removeItem('kanjimon_n5_save');
                 overlay.classList.remove('hidden');
@@ -835,7 +850,8 @@
 
         function showMilestone(title, text) {
             pauseBtn.classList.add('hidden');
-            volumeControl.classList.add('hidden');
+            volumeToggleBtn.classList.add('hidden');
+            volumeDropdown.classList.add('hidden');
             overlay.classList.remove('hidden');
             overlay.innerHTML = `
                 <h1>${title}</h1>
@@ -850,7 +866,7 @@
         function resumeGame() {
             overlay.classList.add('hidden');
             pauseBtn.classList.remove('hidden');
-            volumeControl.classList.remove('hidden');
+            volumeToggleBtn.classList.remove('hidden');
             isProcessingTurn = false;
             loadNextKanji();
         }
@@ -862,7 +878,8 @@
             typeWriter(`¡Estudiante se ha quedado sin energía para estudiar!`, () => {
                 setTimeout(() => {
                     pauseBtn.classList.add('hidden');
-                    volumeControl.classList.add('hidden');
+                    volumeToggleBtn.classList.add('hidden');
+                    volumeDropdown.classList.add('hidden');
                     localStorage.removeItem('kanjimon_n5_save');
                     overlay.classList.remove('hidden');
                     overlay.innerHTML = `
@@ -880,7 +897,7 @@
         startBtn.addEventListener('click', () => {
             overlay.classList.add('hidden');
             pauseBtn.classList.remove('hidden');
-            volumeControl.classList.remove('hidden');
+            volumeToggleBtn.classList.remove('hidden');
             
             const savedData = localStorage.getItem('kanjimon_n5_save');
             
@@ -905,7 +922,7 @@
             
             isPlaying = true;
 
-            musica.volume = volumeSlider.value; // Inicializa con el valor del slider (0.5 por defecto)
+            musica.volume = volumeSlider.value; // Inicia con el valor del slider desplegable
             musica.play();
 
             lastTimeCheck = Date.now();
