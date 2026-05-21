@@ -901,15 +901,26 @@
             
             const savedData = localStorage.getItem('kanjimon_n5_save');
             
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                studentHP = parsed.hp;
-                currentKanjiIndex = parsed.currentIndex;
-                kanjiList = parsed.queue;
-                milestone33 = parsed.milestone33;
-                milestone66 = parsed.milestone66;
-                timeSpentSeconds = parsed.timeSpent || 0;
-            } else {
+            // Sistema de protección para partidas guardadas
+            try {
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    // Validamos que existan las variables clave de la versión actual
+                    if (parsed.currentIndex !== undefined && parsed.queue !== undefined) {
+                        studentHP = parsed.hp;
+                        currentKanjiIndex = parsed.currentIndex;
+                        kanjiList = parsed.queue;
+                        milestone33 = parsed.milestone33 || Math.floor(kanjiList.length * 0.33);
+                        milestone66 = parsed.milestone66 || Math.floor(kanjiList.length * 0.66);
+                        timeSpentSeconds = parsed.timeSpent || 0;
+                    } else {
+                        throw new Error("Datos de guardado incompatibles");
+                    }
+                } else {
+                    throw new Error("No hay partida guardada");
+                }
+            } catch (e) {
+                // Si el guardado falla o es viejo, iniciamos un examen desde cero
                 studentHP = studentMaxHP;
                 kanjiList = [...kanjiDB];
                 shuffle(kanjiList);
@@ -922,16 +933,24 @@
             
             isPlaying = true;
 
-            musica.volume = volumeSlider.value; // Inicia con el valor del slider desplegable
-            musica.play();
+            // Prevención de errores si el navegador bloquea el autoplay
+            try {
+                musica.volume = volumeSlider.value;
+                musica.play();
+            } catch (err) {
+                console.log("El audio requiere interacción previa del usuario.");
+            }
 
             lastTimeCheck = Date.now();
             updatePlayerHP();
             isProcessingTurn = false;
             
+            // Renderizado seguro del escenario
             bgLayers.forEach(layer => layer.classList.remove('active'));
-            currentBgIndex = currentKanjiIndex % bgLayers.length;
-            bgLayers[currentBgIndex].classList.add('active');
+            currentBgIndex = (currentKanjiIndex || 0) % bgLayers.length;
+            if(bgLayers[currentBgIndex]) {
+                bgLayers[currentBgIndex].classList.add('active');
+            }
             document.getElementById('battle-scene').setAttribute('data-terrain', currentBgIndex);
 
             loadNextKanji();
