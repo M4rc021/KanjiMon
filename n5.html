@@ -935,8 +935,17 @@
 
             // Prevención de errores si el navegador bloquea el autoplay
             try {
-                musica.volume = volumeSlider.value;
-                musica.play();
+                // NUEVO SISTEMA DE REPRODUCCIÓN
+                musica.volume = volumeSlider.value; 
+                let playPromise = musica.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // La música empezó a sonar correctamente
+                    }).catch(error => {
+                        console.log("El navegador pausó el audio. Detalles: ", error);
+                    });
+                }
             } catch (err) {
                 console.log("El audio requiere interacción previa del usuario.");
             }
