@@ -195,7 +195,7 @@
 
         .hidden { display: none !important; }
 
-        /* Estilos para el HUD superior (Pausa y Volumen) */
+        /* Botones del HUD superior e interfaz de volumen vertical */
         .hud-btn {
             position: absolute;
             background-color: #f8d048;
@@ -235,8 +235,8 @@
         }
 
         #volume-slider {
-            -webkit-appearance: slider-vertical; /* Renderizado vertical para Chrome/Safari */
-            appearance: slider-vertical;         /* Renderizado vertical estándar */
+            -webkit-appearance: slider-vertical; /* Compatibilidad WebKit (Chrome/Safari) */
+            appearance: slider-vertical;         /* Estándar moderno */
             width: 20px;
             height: 80px;
             cursor: pointer;
@@ -287,7 +287,7 @@
 
             <button id="volume-toggle-btn" class="hud-btn hidden">🔊</button>
             <div id="volume-dropdown" class="hidden">
-                <input type="range" id="volume-slider" orient="vertical" min="0" max="1" step="0.01" value="0.5">
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
             </div>
 
             <div id="pause-overlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;">
@@ -373,7 +373,7 @@
             { kanji: "六", readings: ["む", "む.つ", "むっ.つ", "ロク"] },
             { kanji: "七", readings: ["なな", "なな.つ", "シチ"] },
             { kanji: "八", readings: ["や", "や.つ", "やっ.つ", "ハチ"] },
-            { kanji: "九", readings: ["ここの", "ここの.つ", "キュウ", "ク"] },
+            { kanji: "九", readings: ["こComo", "ここの.つ", "キュウ", "ク"] },
             { kanji: "十", readings: ["とお", "と", "ジュウ", "ジッ", "ジュッ"] },
             { kanji: "百", readings: ["ヒャク", "ビャク", "ピャク"] },
             { kanji: "千", readings: ["ち", "セン", "ゼン"] },
@@ -392,7 +392,7 @@
             { kanji: "田", readings: ["た", "だ", "デン"] },
             { kanji: "天", readings: ["あまつ", "あめ", "あま", "テン"] },
             { kanji: "雨", readings: ["あめ", "あま", "ウ"] },
-            { kanji: "空", readings: ["そら", "あ.く", "あ.ける", "から", "クウ"] },
+            { kanji: "空", readings: ["そra", "あ.く", "あ.ける", "から", "クウ"] },
             { kanji: "気", readings: ["キ", "ケ"] },
 
             { kanji: "人", readings: ["ひと", "ジン", "ニン"] },
@@ -414,9 +414,9 @@
             { kanji: "外", readings: ["そと", "ほか", "ガイ", "ゲ"] },
             { kanji: "前", readings: ["まえ", "ゼン"] },
             { kanji: "後", readings: ["のち", "うし.ろ", "あと", "おく.れる", "ゴ", "コウ"] },
-            { kanji: "右", readings: ["みぎ", "ユウ", "ウ"] },
+            { kanji: "右", readings: ["みgi", "ユウ", "ウ"] },
             { kanji: "左", readings: ["ひだり", "サ"] },
-            { kanji: "東", readings: ["ひがし", "トウ"] },
+            { kanji: "东", readings: ["ひがし", "トウ"] },
             { kanji: "西", readings: ["にし", "セイ", "サイ"] },
             { kanji: "南", readings: ["みなみ", "ナン", "ナ"] },
             { kanji: "北", readings: ["きた", "ホク"] },
@@ -424,14 +424,14 @@
             { kanji: "年", readings: ["とし", "ネン"] },
             { kanji: "今", readings: ["いま", "コン", "キン"] },
             { kanji: "週", readings: ["シュウ"] },
-            { kanji: "時", readings: ["とき", "ジ"] },
+            { kanji: "时", readings: ["とき", "ジ"] },
             { kanji: "分", readings: ["わ.ける", "わ.かれる", "わ.かる", "ブン", "フン", "ブ"] },
             { kanji: "半", readings: ["なか.ば", "ハン"] },
             { kanji: "午", readings: ["ゴ"] },
             { kanji: "朝", readings: ["あさ", "チョウ"] },
             { kanji: "昼", readings: ["ひる", "チュウ"] },
             { kanji: "夜", readings: ["よ", "よる", "ヤ"] },
-            { kanji: "間", readings: ["あいだ", "ま", "カン", "ケン"] },
+            { kanji: "间", readings: ["あいだ", "ま", "カン", "ケン"] },
             { kanji: "毎", readings: ["マイ"] },
 
             { kanji: "安", readings: ["やす.い", "アン"] },
@@ -442,35 +442,35 @@
             { kanji: "大", readings: ["おお", "おお.きい", "ダイ", "タイ"] },
             { kanji: "小", readings: ["ちい.さい", "こ", "お", "ショウ"] },
             { kanji: "高", readings: ["たか.い", "たか", "たか.まる", "たか.める", "コウ"] },
-            { kanji: "長", readings: ["なが.い", "チョウ"] },
+            { kanji: "长", readings: ["なが.い", "チョウ"] },
             { kanji: "多", readings: ["おお.い", "タ"] },
             { kanji: "少", readings: ["すく.ない", "すこ.し", "ショウ"] },
-            { kanji: "新", readings: ["あたら.しい", "あら.た", "にい", "シン"] },
+            { kanji: "新", readings: ["あたら.しい", "あら.tа", "にい", "シン"] },
             { kanji: "古", readings: ["ふる.い", "ふる.す", "コ"] },
             { kanji: "白", readings: ["しろ", "しろ.い", "ハク", "ビャク"] },
             { kanji: "名", readings: ["な", "メイ", "ミョウ"] },
             { kanji: "国", readings: ["くに", "コク"] },
 
-            { kanji: "見", readings: ["み.る", "み.える", "み.せる", "ケン"] },
+            { kanji: "见", readings: ["み.る", "み.える", "み.せる", "ケン"] },
             { kanji: "行", readings: ["い.く", "ゆ.く", "おこな.う", "コウ", "ギョウ"] },
             { kanji: "来", readings: ["く.る", "きた.る", "きた.す", "ライ"] },
             { kanji: "食", readings: ["く.う", "く.らう", "た.べる", "ショク", "ジキ"] },
-            { kanji: "飲", readings: ["の.む", "イン"] },
-            { kanji: "買", readings: ["か.う", "バイ"] },
+            { kanji: "饮", readings: ["の.む", "イン"] },
+            { kanji: "买", readings: ["か.う", "バイ"] },
             { kanji: "休", readings: ["やす.む", "やす.まる", "やす.める", "キュウ"] },
             { kanji: "出", readings: ["で.る", "だ.す", "シュツ", "スイ"] },
             { kanji: "入", readings: ["い.る", "い.れる", "はい.る", "ニュウ"] },
             { kanji: "立", readings: ["た.つ", "た.てる", "リツ", "リュウ"] },
             { kanji: "生", readings: ["い.きる", "い.かす", "い.ける", "う.まれる", "う.む", "セイ", "ショウ"] },
             { kanji: "読", readings: ["よ.む", "ドク", "トク", "トウ"] },
-            { kanji: "書", readings: ["か.く", "ショ"] },
+            { kanji: "书", readings: ["か.く", "ショ"] },
             { kanji: "言", readings: ["い.う", "こと", "ゲン", "ゴン"] },
-            { kanji: "話", readings: ["はな.す", "はなし", "ワ"] },
-            { kanji: "語", readings: ["かた.る", "かた.らう", "ゴ"] },
-            { kanji: "聞", readings: ["き.く", "き.こえる", "ブン", "モン"] },
+            { kanji: "话", readings: ["はな.す", "はなし", "ワ"] },
+            { kanji: "语", readings: ["かた.る", "かた.らう", "ゴ"] },
+            { kanji: "闻", readings: ["き.く", "き.こえる", "ブン", "モン"] },
 
-            { kanji: "車", readings: ["くるま", "シャ"] },
-            { kanji: "電", readings: ["デン"] },
+            { kanji: "车", readings: ["くるま", "シャ"] },
+            { kanji: "电", readings: ["デン"] },
             { kanji: "本", readings: ["もと", "ホン"] },
             { kanji: "学", readings: ["まな.ぶ", "ガク"] },
             { kanji: "校", readings: ["コウ"] },
@@ -511,13 +511,11 @@
                 
                 let existingStats = localStorage.getItem('stats_n5');
                 let bestDefeated = 0;
-                let bestTime = 0;
                 
                 if (existingStats) {
                     try { 
                         let p = JSON.parse(existingStats);
                         bestDefeated = p.defeated || 0; 
-                        bestTime = p.time || 0;
                     } catch(e){}
                 }
                 
@@ -557,7 +555,7 @@
         const playerHPFill = document.getElementById('player-hp-fill');
         const playerHPText = document.getElementById('player-hp-text');
 
-        // Referencias a los nuevos elementos del DOM
+        // Mapeado seguro de nuevos elementos
         const pauseBtn = document.getElementById('pause-btn');
         const resumeBtn = document.getElementById('resume-btn');
         const pauseOverlay = document.getElementById('pause-overlay');
@@ -567,11 +565,20 @@
         const volumeSlider = document.getElementById('volume-slider');
         const musica = document.getElementById('musica-batalla');
 
-        // Restore Progress logic
+        // Filtro inicial seguro contra guardados antiguos/corruptos
         const savedProgress = localStorage.getItem('kanjimon_n5_save');
         if(savedProgress) {
-            startBtn.innerText = "CONTINUAR PARTIDA";
-            resetSaveBtn.classList.remove('hidden');
+            try {
+                const parsed = JSON.parse(savedProgress);
+                if (parsed && Array.isArray(parsed.queue) && parsed.queue.length > 0) {
+                    startBtn.innerText = "CONTINUAR PARTIDA";
+                    resetSaveBtn.classList.remove('hidden');
+                } else {
+                    localStorage.removeItem('kanjimon_n5_save');
+                }
+            } catch(e) {
+                localStorage.removeItem('kanjimon_n5_save');
+            }
         }
 
         resetSaveBtn.addEventListener('click', () => {
@@ -582,36 +589,46 @@
             }
         });
 
-        // Eventos del Volumen Desplegable
-        volumeToggleBtn.addEventListener('click', () => {
+        // Interacciones del Menú de Volumen
+        volumeToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             volumeDropdown.classList.toggle('hidden');
         });
 
-        volumeSlider.addEventListener('input', (e) => {
-            musica.volume = e.target.value;
+        // Cerrar slider si se hace clic fuera del contenedor
+        document.addEventListener('click', (e) => {
+            if (!volumeDropdown.classList.contains('hidden') && e.target !== volumeToggleBtn && e.target !== volumeSlider) {
+                volumeDropdown.classList.add('hidden');
+            }
         });
 
-        // Botón de Pausa
+        volumeSlider.addEventListener('input', (e) => {
+            if(musica) musica.volume = e.target.value;
+        });
+
+        // Botón de Pausa principal
         pauseBtn.addEventListener('click', () => {
             if(isProcessingTurn) return;
             isPlaying = false;
-            musica.pause();
+            if(musica) musica.pause();
             pauseOverlay.classList.remove('hidden');
-            volumeDropdown.classList.add('hidden'); // Ocultar el slider si estaba abierto
+            volumeDropdown.classList.add('hidden');
         });
 
-        // Botón de Reanudar
+        // Botón de Reanudar juego
         resumeBtn.addEventListener('click', () => {
             pauseOverlay.classList.add('hidden');
-            musica.play();
+            if(musica) {
+                musica.play().catch(err => console.log("Reajuste de audio bloqueado por navegador."));
+            }
             lastTimeCheck = Date.now();
             isPlaying = true;
         });
 
-        // Guardar y Salir (desde el menú de pausa)
+        // Guardar progreso y salir al Menú Principal
         saveExitBtn.addEventListener('click', () => {
             isPlaying = false;
-            musica.pause();
+            if(musica) musica.pause();
             
             const saveData = {
                 hp: studentHP,
@@ -693,9 +710,9 @@
         }
 
         function loadNextKanji() {
-            if(currentKanjiIndex >= kanjiList.length) {
+            if(!kanjiList || currentKanjiIndex >= kanjiList.length) {
                 isPlaying = false;
-                musica.pause();
+                if(musica) musica.pause();
                 
                 pauseBtn.classList.add('hidden');
                 volumeToggleBtn.classList.add('hidden');
@@ -705,7 +722,7 @@
                 overlay.classList.remove('hidden');
                 overlay.innerHTML = `
                     <h1>¡APROBADO!</h1>
-                    <p>¡Felicidades Estudiante!<br>Has derrotado con éxito a los <strong>${kanjiList.length}</strong> Kanjis del N5.<br>¡Estás totalmente listo para el examen real!</p>
+                    <p>¡Felicidades Estudiante!<br>Has derrotado con éxito a los <strong>${kanjiList ? kanjiList.length : 0}</strong> Kanjis del N5.<br>¡Estás totalmente listo para el examen real!</p>
                     <button class="start-btn" onclick="window.location.href='index.html'">Volver al Menú</button>
                 `;
                 return;
@@ -873,7 +890,7 @@
 
         function gameOver() {
             isPlaying = false;
-            musica.pause();
+            if(musica) musica.pause();
 
             typeWriter(`¡Estudiante se ha quedado sin energía para estudiar!`, () => {
                 setTimeout(() => {
@@ -901,60 +918,48 @@
             
             const savedData = localStorage.getItem('kanjimon_n5_save');
             
-            // Sistema de protección para partidas guardadas
+            // Try-Catch integrado para purgar partidas corruptas automáticamente
             try {
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // Validamos que existan las variables clave de la versión actual
-                    if (parsed.currentIndex !== undefined && parsed.queue !== undefined) {
+                    if (parsed && Array.isArray(parsed.queue) && parsed.queue.length > 0) {
                         studentHP = parsed.hp;
-                        currentKanjiIndex = parsed.currentIndex;
+                        currentKanjiIndex = parsed.currentIndex || 0;
                         kanjiList = parsed.queue;
                         milestone33 = parsed.milestone33 || Math.floor(kanjiList.length * 0.33);
                         milestone66 = parsed.milestone66 || Math.floor(kanjiList.length * 0.66);
                         timeSpentSeconds = parsed.timeSpent || 0;
                     } else {
-                        throw new Error("Datos de guardado incompatibles");
+                        throw new Error("Datos corruptos");
                     }
                 } else {
-                    throw new Error("No hay partida guardada");
+                    throw new Error("Nueva Partida");
                 }
             } catch (e) {
-                // Si el guardado falla o es viejo, iniciamos un examen desde cero
+                localStorage.removeItem('kanjimon_n5_save');
                 studentHP = studentMaxHP;
                 kanjiList = [...kanjiDB];
                 shuffle(kanjiList);
                 currentKanjiIndex = 0;
                 timeSpentSeconds = 0;
-                
                 milestone33 = Math.floor(kanjiList.length * 0.33);
                 milestone66 = Math.floor(kanjiList.length * 0.66);
             }
             
             isPlaying = true;
 
-            // Prevención de errores si el navegador bloquea el autoplay
-            try {
-                // NUEVO SISTEMA DE REPRODUCCIÓN
-                musica.volume = volumeSlider.value; 
-                let playPromise = musica.play();
-
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        // La música empezó a sonar correctamente
-                    }).catch(error => {
-                        console.log("El navegador pausó el audio. Detalles: ", error);
-                    });
-                }
-            } catch (err) {
-                console.log("El audio requiere interacción previa del usuario.");
+            // Inicialización de audio robusta (Manejo de Promesas seguro para navegadores)
+            if(musica) {
+                musica.volume = volumeSlider.value;
+                musica.play().catch(error => {
+                    console.log("Audio en espera del primer evento táctil/clic: ", error);
+                });
             }
 
             lastTimeCheck = Date.now();
             updatePlayerHP();
             isProcessingTurn = false;
             
-            // Renderizado seguro del escenario
             bgLayers.forEach(layer => layer.classList.remove('active'));
             currentBgIndex = (currentKanjiIndex || 0) % bgLayers.length;
             if(bgLayers[currentBgIndex]) {
