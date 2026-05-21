@@ -538,6 +538,8 @@
         saveExitBtn.addEventListener('click', () => {
             if(isProcessingTurn) return;
             isPlaying = false;
+
+            document.getElementById('musica-batalla').pause();
             
             const saveData = {
                 hp: studentHP,
@@ -617,6 +619,9 @@
         function loadNextKanji() {
             if(currentKanjiIndex >= kanjiList.length) {
                 isPlaying = false;
+
+                document.getElementById('musica-batalla').pause();
+                
                 saveExitBtn.classList.add('hidden');
                 localStorage.removeItem('kanjimon_n5_save');
                 overlay.classList.remove('hidden');
@@ -787,6 +792,9 @@
 
         function gameOver() {
             isPlaying = false;
+
+            document.getElementById('musica-batalla').pause();
+
             typeWriter(`¡Estudiante se ha quedado sin energía para estudiar!`, () => {
                 setTimeout(() => {
                     saveExitBtn.classList.add('hidden');
@@ -830,6 +838,11 @@
             }
             
             isPlaying = true;
+
+            const musica = document.getElementById('musica-batalla');
+            musica.volume = 0.3; // 0.3 es el 30% de volumen para que no sature
+            musica.play();
+
             lastTimeCheck = Date.now();
             updatePlayerHP();
             isProcessingTurn = false;
@@ -843,5 +856,7 @@
         });
 
     </script>
+
+    <audio id="musica-batalla" src="musica-batalla.mp3" loop></audio>
 </body>
 </html>
